@@ -19,10 +19,13 @@ app.post("/api/fileanalyse", upload.single("upfile"), function (req, res) {
     return res.status(400).json({ error: "No file uploaded" });
   }
 
+  // req.file.size is set by multer; fall back to buffer length if needed
+  const size = req.file.size !== undefined ? req.file.size : req.file.buffer.length;
+
   res.json({
     name: req.file.originalname,
     type: req.file.mimetype,
-    size: req.file.size,
+    size: size,
   });
 });
 
