@@ -1,36 +1,32 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
+const path = require("path");
 
 const app = express();
-const upload = multer();
+
+// Use memory storage — no files written to disk
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 
-app.get("/", function (req, res) {
-  res.send(`
-    <h2>File Metadata Microservice</h2>
-    <form action="/api/fileanalyse" method="post" 
-enctype="multipart/form-data">
-      <input type="file" name="upfile" />
-      <input type="submit" value="Upload" />
-    </form>
-  `);
-});
+// Serve static files from /public
+app.use(express.static(path.join(__dirname, "public")));
 
-app.post("/api/fileanalyse", upload.single("upfile"), function (req, res) 
-{
+// File analysis endpoint
+app.post("/api/fileanalyse", upload.single("upfile"), function (req, res) {
   if (!req.file) {
-    return res.json({ error: "No file uploaded" });
+    return res.status(400).json({ error: "No file uploaded" });
   }
 
   res.json({
     name: req.file.originalname,
     type: req.file.mimetype,
-    size: req.file.size
+    size: req.file.size,
   });
 });
 
-app.listen(3000, function () {
-  console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, function () {
+  console.log("Server running on port " + PORT);
 });
